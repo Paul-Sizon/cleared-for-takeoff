@@ -4,9 +4,10 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python: ["3.9", "3.13"]
+        python: ["3.10", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -18,3 +19,9 @@ jobs:
           python evals/fixtures/build_fixtures.py /tmp/fx
           python skills/cleared-for-takeoff/scripts/preflight.py /tmp/fx/swift-clean --ci
           ! python skills/cleared-for-takeoff/scripts/preflight.py /tmp/fx/swift-broken --ci > /dev/null
+  macos-system-python:
+    # what most users run: the python3 that ships with macOS / Xcode CLT
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: /usr/bin/python3 --version && /usr/bin/python3 -m unittest discover tests
