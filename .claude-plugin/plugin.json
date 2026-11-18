@@ -1,0 +1,10 @@
+{
+  "name": "cleared-for-takeoff",
+  "description": "Pre-submission App Store review for iOS apps (Swift, React Native/Expo, Flutter): deterministic scanner + reviewer-style judgment against the live App Review Guidelines.",
+  "version": "0.1.0",
+  "author": { "name": "Paul Sizon" },
+  "homepage": "https://github.com/Paul-Sizon/cleared-for-takeoff",
+  "repository": "https://github.com/Paul-Sizon/cleared-for-takeoff",
+  "license": "MIT",
+  "keywords": ["apple", "app-store", "app-review", "ios", "swift", "react-native", "expo", "flutter", "privacy-manifest", "preflight"]
+}

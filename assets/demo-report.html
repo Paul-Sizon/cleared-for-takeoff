@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Preflight · ReceiptPal</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#101828;--muted:#5d6b82;--line:#e4e7ec;--soft:#f2f4f7;
+--blocker:#d92d20;--blocker-bg:#fef3f2;--warning:#c4610a;--warning-bg:#fffaeb;--info:#1570ef;--info-bg:#eff8ff;
+--good:#079455;--good-bg:#ecfdf3;--fix:#067647;--code:#344054;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0c111d;--card:#161b26;--ink:#f5f5f6;--muted:#94969c;--line:#2a303c;--soft:#1f242f;
+--blocker:#f97066;--blocker-bg:#2b1517;--warning:#fdb022;--warning-bg:#2a2112;--info:#53b1fd;--info-bg:#102a43;
+--good:#47cd89;--good-bg:#0f2a1d;--fix:#75e0a7;--code:#cecfd2;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#0c111d;--card:#161b26;--ink:#f5f5f6;--muted:#94969c;--line:#2a303c;--soft:#1f242f;
+--blocker:#f97066;--blocker-bg:#2b1517;--warning:#fdb022;--warning-bg:#2a2112;--info:#53b1fd;--info-bg:#102a43;
+--good:#47cd89;--good-bg:#0f2a1d;--fix:#75e0a7;--code:#cecfd2;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,Roboto,sans-serif}
+main{max-width:1120px;margin:0 auto;padding:24px 16px 48px}
+code,pre{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:13px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.brand{font-weight:700;letter-spacing:-.01em}.logo{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--ink);color:var(--bg);margin-right:6px}
+.meta{color:var(--muted);font-size:13px;display:flex;align-items:center;gap:10px}
+.theme{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:14px}
+.hero{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;padding:28px;border-radius:20px;border:1px solid var(--line);background:var(--card);position:relative;overflow:hidden}
+.hero:before{content:"";position:absolute;inset:0 auto 0 0;width:6px;background:var(--muted)}
+.hero.bad:before{background:var(--blocker)}.hero.warn:before{background:var(--warning)}.hero.good:before{background:var(--good)}
+.hero.bad{background:linear-gradient(90deg,var(--blocker-bg),var(--card) 60%)}.hero.warn{background:linear-gradient(90deg,var(--warning-bg),var(--card) 60%)}.hero.good{background:linear-gradient(90deg,var(--good-bg),var(--card) 60%)}
+.app{font-size:14px;color:var(--muted);font-weight:600}.app span{font-weight:400}
+.verdict{font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin:4px 0}
+.bad .verdict{color:var(--blocker)}.warn .verdict{color:var(--warning)}.good .verdict{color:var(--good)}
+.reason{color:var(--muted)}
+.status{display:inline-block;margin-top:10px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:99px;background:var(--soft);color:var(--muted)}
+.bad .status{background:var(--blocker-bg);color:var(--blocker)}.warn .status{background:var(--warning-bg);color:var(--warning)}.good .status{background:var(--good-bg);color:var(--good)}
+.hero-stats{display:flex;align-items:center;gap:20px}
+.donut{width:120px;height:120px;transform:rotate(0)}.ring-bg{fill:none;stroke:var(--soft);stroke-width:5}
+.seg{fill:none;stroke-width:5}.seg.blocker{stroke:var(--blocker)}.seg.warning{stroke:var(--warning)}.seg.info{stroke:var(--info)}.seg.good{stroke:var(--good)}
+.donut-num{font-size:10px;font-weight:800;text-anchor:middle;fill:var(--ink)}
+.legend{list-style:none;margin:0;padding:0;display:grid;gap:6px}.legend li{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.legend li:before{content:"";width:10px;height:10px;border-radius:3px;background:currentColor}
+.legend li.blocker{color:var(--blocker)}.legend li.warning{color:var(--warning)}.legend li.info{color:var(--info)}.legend b{color:var(--ink);min-width:20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.summary p{margin:0}@media(max-width:860px){.grid{grid-template-columns:1fr}.verdict{font-size:32px}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:16px}.grid .card{margin-top:0}
+h2{font-size:16px;margin:0 0 12px;letter-spacing:-.01em}
+.areas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.area{display:grid;grid-template-columns:22px 140px 1fr 150px;align-items:center;gap:10px;font-size:14px}
+.aicon{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:12px;font-weight:800;color:#fff}
+.area.bad .aicon{background:var(--blocker)}.area.warn .aicon{background:var(--warning)}.area.good .aicon{background:var(--good)}
+.abar{display:flex;height:10px;border-radius:99px;background:var(--soft);overflow:hidden}.abar i{display:block;height:100%}
+.abar i.blocker{background:var(--blocker)}.abar i.warning{background:var(--warning)}.abar i.info{background:var(--info)}.abar i.pass{background:var(--good);opacity:.25}
+.acount{color:var(--muted);font-size:12px;white-space:nowrap;text-align:right}
+@media(max-width:520px){.area{grid-template-columns:22px 1fr 90px}.acount{display:none}}
+table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line);padding:6px 8px}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}td code{overflow-wrap:anywhere}.kind{background:var(--soft);padding:2px 8px;border-radius:99px;font-size:12px}
+.ok{color:var(--good);font-weight:600}.no{color:var(--blocker);font-weight:600}.hint{color:var(--muted);font-size:12px;margin:10px 0 0}
+.fhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}.fhead h2{margin:0;margin-right:auto}
+.filters{display:flex;gap:6px;flex-wrap:wrap}.f{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+.f span{color:var(--muted);margin-left:2px}.f.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}.f.on span{color:inherit;opacity:.7}
+.search{flex:1 1 220px;max-width:320px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:7px 12px;font:inherit;font-size:13px}
+.gh{font-size:13px;text-transform:uppercase;letter-spacing:.06em;margin:20px 0 8px;display:flex;gap:8px;align-items:center}
+.gh span{background:currentColor;border-radius:99px;padding:0 8px;font-size:12px}.gh span{color:var(--card)}
+.gh.blocker{color:var(--blocker)}.gh.warning{color:var(--warning)}.gh.info{color:var(--info)}
+.gh.blocker span{background:var(--blocker)}.gh.warning span{background:var(--warning)}.gh.info span{background:var(--info)}
+.finding{border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:12px;margin:8px 0;background:var(--card)}
+.finding.blocker{border-left-color:var(--blocker)}.finding.warning{border-left-color:var(--warning)}.finding.info{border-left-color:var(--info)}
+.finding summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 14px}
+.finding summary::-webkit-details-marker{display:none}
+.sev-dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}.blocker .sev-dot{background:var(--blocker)}.warning .sev-dot{background:var(--warning)}.info .sev-dot{background:var(--info)}
+.fid{font:600 12px ui-monospace,Menlo,monospace;color:var(--muted)}.ftitle{font-weight:600;flex:1 1 300px}
+.fmeta{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:11.5px;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--muted);white-space:nowrap}
+.chip.gl{font-family:ui-monospace,Menlo,monospace;color:var(--ink)}
+.conf-validator-certain,.conf-validator-blocking{background:var(--blocker-bg);color:var(--blocker)}.conf-review-risk{background:var(--warning-bg);color:var(--warning)}
+.conf-judgment-call{background:var(--info-bg);color:var(--info)}.chip.rev{background:var(--info-bg);color:var(--info)}
+.fbody{padding:0 14px 14px 34px;display:grid;gap:8px}
+.fbody .row,.fbody .loc{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:baseline}
+.fbody span{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.fbody p{margin:0}.fbody p code{background:var(--soft);padding:1px 5px;border-radius:5px;font-size:12.5px;color:var(--code)}.loc code{background:var(--soft);padding:2px 8px;border-radius:6px;color:var(--code);word-break:break-all}
+.row.fix p{color:var(--fix);font-weight:500}.rule{font:12px ui-monospace,Menlo,monospace;color:var(--muted)}
+.empty{color:var(--muted)}.plain{margin:0;padding-left:18px;color:var(--muted)}.plain li{margin:4px 0}
+.conf-legend{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;margin:0;align-items:center}.conf-legend dd{margin:0;color:var(--muted);font-size:13px}
+.notes{white-space:pre-wrap;background:var(--soft);padding:14px;border-radius:10px;margin:0}
+.copy{margin-top:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:5px 12px;cursor:pointer;font:inherit;font-size:13px}
+.todo{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+footer{color:var(--muted);font-size:12px;text-align:center;margin-top:28px}
+.hidden{display:none!important}
+@media print{.filters,.search,.copy{display:none}.finding{break-inside:avoid}details.finding:not([open]) .fbody{display:grid}}
+</style></head>
+<body>
+<main>
+<header class="top">
+  <div class="brand"><span class="logo">✈︎</span> Cleared for Takeoff</div>
+  <div class="meta">native · 2026-11-18 · v0.1.0
+    <button class="theme" title="Toggle light/dark" aria-label="Toggle light or dark theme">◐</button></div>
+</header>
+
+<section class="hero bad">
+  <div class="hero-main">
+    <div class="app">ReceiptPal <span>v1.0 beta (1)</span></div>
+    <div class="status">✈︎ Grounded</div>
+    <div class="verdict">NOT READY</div>
+    <div class="reason">13 blockers must be fixed before submission</div>
+  </div>
+  <div class="hero-stats">
+    <svg viewBox="0 0 42 42" class="donut" role="img" aria-label="31 findings"><circle cx="21" cy="21" r="15.9" class="ring-bg"/><circle cx="21" cy="21" r="15.9" class="seg blocker" stroke-dasharray="41.94 58.06" stroke-dashoffset="25.00"/><circle cx="21" cy="21" r="15.9" class="seg warning" stroke-dasharray="51.61 48.39" stroke-dashoffset="-16.94"/><circle cx="21" cy="21" r="15.9" class="seg info" stroke-dasharray="6.45 93.55" stroke-dashoffset="-68.55"/><text x="21" y="23.5" class="donut-num">31</text></svg>
+    <ul class="legend">
+      <li class="blocker"><b>13</b> Blockers</li><li class="warning"><b>16</b> Warnings</li><li class="info"><b>2</b> Info</li>
+    </ul>
+  </div>
+</section>
+
+<section class="card summary"><h2>Summary</h2><p>ReceiptPal scans paper receipts, uses accounts and a monthly subscription, and sends receipt text to OpenAI for categorisation. Highest risk: upload will fail (widget privacy manifest, icon alpha, version string), followed by privacy (camera string, AI consent) and the missing demo account.</p></section>
+
+<div class="grid">
+  <section class="card"><h2>Areas checked</h2><ul class="areas"><li class="area bad"><span class="aicon">✕</span><span class="aname">UI &amp; assets</span>
+  <span class="abar"><i class="blocker" style="width:33.3%" title="3 blockers"></i><i class="warning" style="width:22.2%" title="2 warnings"></i><i class="info" style="width:11.1%" title="1 info"></i></span><span class="acount">3 blockers, 2 warnings, 1 info</span></li><li class="area bad"><span class="aicon">✕</span><span class="aname">Configuration</span>
+  <span class="abar"><i class="blocker" style="width:22.2%" title="2 blockers"></i><i class="warning" style="width:66.7%" title="6 warnings"></i><i class="info" style="width:11.1%" title="1 info"></i></span><span class="acount">2 blockers, 6 warnings, 1 info</span></li><li class="area bad"><span class="aicon">✕</span><span class="aname">Privacy</span>
+  <span class="abar"><i class="blocker" style="width:22.2%" title="2 blockers"></i><i class="warning" style="width:33.3%" title="3 warnings"></i></span><span class="acount">2 blockers, 3 warnings</span></li><li class="area bad"><span class="aicon">✕</span><span class="aname">Business</span>
+  <span class="abar"><i class="blocker" style="width:22.2%" title="2 blockers"></i><i class="warning" style="width:11.1%" title="1 warnings"></i></span><span class="acount">2 blockers, 1 warning</span></li><li class="area bad"><span class="aicon">✕</span><span class="aname">Accounts</span>
+  <span class="abar"><i class="blocker" style="width:11.1%" title="1 blockers"></i><i class="warning" style="width:11.1%" title="1 warnings"></i></span><span class="acount">1 blocker, 1 warning</span></li><li class="area bad"><span class="aicon">✕</span><span class="aname">Code</span>
+  <span class="abar"><i class="blocker" style="width:11.1%" title="1 blockers"></i><i class="warning" style="width:11.1%" title="1 warnings"></i></span><span class="acount">1 blocker, 1 warning</span></li><li class="area bad"><span class="aicon">✕</span><span class="aname">Reviewer judgment</span>
+  <span class="abar"><i class="blocker" style="width:11.1%" title="1 blockers"></i><i class="warning" style="width:11.1%" title="1 warnings"></i></span><span class="acount">1 blocker, 1 warning</span></li><li class="area bad"><span class="aicon">✕</span><span class="aname">Compliance</span>
+  <span class="abar"><i class="blocker" style="width:11.1%" title="1 blockers"></i></span><span class="acount">1 blocker</span></li><li class="area warn"><span class="aicon">!</span><span class="aname">Security</span>
+  <span class="abar"><i class="warning" style="width:11.1%" title="1 warnings"></i></span><span class="acount">1 warning</span></li><li class="area good"><span class="aicon">✓</span><span class="aname">Dependencies</span>
+  <span class="abar"><i class="pass" style="width:100%"></i></span><span class="acount">Passed</span></li><li class="area good"><span class="aicon">✓</span><span class="aname">Safety</span>
+  <span class="abar"><i class="pass" style="width:100%"></i></span><span class="acount">Passed</span></li></ul></section>
+  <section class="card"><h2>Targets</h2>
+    <table class="targets"><thead><tr><th>Target</th><th>Kind</th><th>Bundle ID</th><th>Version</th><th>Manifest</th></tr></thead>
+    <tbody><tr><td><b>ReceiptPal</b></td><td><span class="kind">app</span></td><td><code>com.acme.receiptpal</code></td><td>1.0 beta (1)</td><td><span class="no">✕ missing</span></td></tr><tr><td><b>ReceiptWidget</b></td><td><span class="kind">extension</span></td><td><code>com.acme.widget</code></td><td>1.1 (1)</td><td><span class="no">✕ missing</span></td></tr></tbody></table>
+    <p class="hint">Every app extension is its own bundle and needs its own privacy manifest.</p>
+  </section>
+</div>
+
+<section class="card findings">
+  <div class="fhead"><h2>Findings</h2>
+    <div class="filters" role="group" aria-label="Filter by severity">
+      <button class="f on" data-f="ALL">All <span>31</span></button>
+      <button class="f blocker" data-f="BLOCKER">Blockers <span>13</span></button><button class="f warning" data-f="WARNING">Warnings <span>16</span></button><button class="f info" data-f="INFO">Info <span>2</span></button>
+    </div>
+    <input class="search" type="search" placeholder="Search findings, files, guidelines…" aria-label="Search findings">
+  </div>
+  <section class="group" data-group="BLOCKER"><h3 class="gh blocker">Blockers <span>13</span></h3>
+<details class="finding blocker" data-sev="BLOCKER" data-search="account creation without in-app deletion sign-up flow found (`func signup(email: string, pw: string) { auth.auth().createuser(withemail: email, password`) but nothing that lets users delete their account. add a clearly discoverable delete account action (e.g. settings → account) that deletes the account and associated data, or links straight to a web page that completes deletion. deactivation alone does not count. if you use sign in with apple, also revoke the token via the rest api. account-deletion/missing 5.1.1(v) receiptpal/auth.swift:6 none" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">B1</span>
+    <span class="ftitle">Account creation without in-app deletion</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">5.1.1(v)</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Auth.swift:6</code></div>
+    <div class="row"><span>Evidence</span><p>Sign-up flow found (<code>func signUp(email: String, pw: String) { Auth.auth().createUser(withEmail: email, password</code>) but nothing that lets users delete their account.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Add a clearly discoverable Delete Account action (e.g. Settings → Account) that deletes the account and associated data, or links straight to a web page that completes deletion. Deactivation alone does not count. If you use Sign in with Apple, also revoke the token via the REST API.</p></div>
+    <div class="rule">account-deletion/missing</div>
+  </div>
+</details>
+<details class="finding blocker" data-sev="BLOCKER" data-search="icon-1024.png: app store icon has an alpha channel receiptpal/assets.xcassets/appicon.appiconset/icon-1024.png is png with alpha; upload is rejected for the marketing icon. re-export without alpha (preview → export → uncheck alpha, or `sips -s format jpeg` then back to png). assets/icon-alpha itms-90717 receiptpal/assets.xcassets/appicon.appiconset/icon-1024.png receiptpal" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">B2</span>
+    <span class="ftitle">icon-1024.png: App Store icon has an alpha channel</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">ITMS-90717</span><span class="chip conf conf-validator-blocking" title="Upload validation would block this; evidence is from source, so verify with a build.">Upload-blocking</span><span class="chip tgt">target · ReceiptPal</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Assets.xcassets/AppIcon.appiconset/icon-1024.png</code></div>
+    <div class="row"><span>Evidence</span><p>ReceiptPal/Assets.xcassets/AppIcon.appiconset/icon-1024.png is PNG with alpha; upload is rejected for the marketing icon.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Re-export without alpha (Preview → Export → uncheck Alpha, or <code>sips -s format jpeg</code> then back to png).</p></div>
+    <div class="rule">assets/icon-alpha</div>
+  </div>
+</details>
+<details class="finding blocker" data-sev="BLOCKER" data-search="receiptpal: no launch screen info.plist has neither uilaunchstoryboardname nor uilaunchscreen. add a launchscreen storyboard or the uilaunchscreen dictionary (xcode: &#x27;launch screen&#x27; in target info). assets/no-launch-screen itms-90475 / 4.0 receiptpal/info.plist receiptpal" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">B3</span>
+    <span class="ftitle">ReceiptPal: no launch screen</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">ITMS-90475 / 4.0</span><span class="chip conf conf-validator-blocking" title="Upload validation would block this; evidence is from source, so verify with a build.">Upload-blocking</span><span class="chip tgt">target · ReceiptPal</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Info.plist</code></div>
+    <div class="row"><span>Evidence</span><p>Info.plist has neither UILaunchStoryboardName nor UILaunchScreen.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Add a LaunchScreen storyboard or the UILaunchScreen dictionary (Xcode: &#x27;Launch Screen&#x27; in target Info).</p></div>
+    <div class="rule">assets/no-launch-screen</div>
+  </div>
+</details>
+<details class="finding blocker" data-sev="BLOCKER" data-search="receiptpal: ipad multitasking needs all 4 orientations ipad is supported but only 2 orientation(s) are declared and uirequiresfullscreen is not set. support all four ipad orientations, or set uirequiresfullscreen = yes. assets/ipad-orientations itms-90474 receiptpal/info.plist receiptpal" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">B4</span>
+    <span class="ftitle">ReceiptPal: iPad multitasking needs all 4 orientations</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">ITMS-90474</span><span class="chip conf conf-validator-blocking" title="Upload validation would block this; evidence is from source, so verify with a build.">Upload-blocking</span><span class="chip tgt">target · ReceiptPal</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Info.plist</code></div>
+    <div class="row"><span>Evidence</span><p>iPad is supported but only 2 orientation(s) are declared and UIRequiresFullScreen is not set.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Support all four iPad orientations, or set UIRequiresFullScreen = YES.</p></div>
+    <div class="rule">assets/ipad-orientations</div>
+  </div>
+</details>
+<details class="finding blocker" data-sev="BLOCKER" data-search="receiptwidget: bundle id not prefixed by the app&#x27;s com.acme.widget must start with com.acme.receiptpal. rename to com.acme.receiptpal.&lt;extension&gt;. build-config/ext-bundle-id itms-90355 receiptpal.xcodeproj/project.pbxproj receiptwidget" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">B5</span>
+    <span class="ftitle">ReceiptWidget: bundle ID not prefixed by the app&#x27;s</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">ITMS-90355</span><span class="chip conf conf-validator-blocking" title="Upload validation would block this; evidence is from source, so verify with a build.">Upload-blocking</span><span class="chip tgt">target · ReceiptWidget</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal.xcodeproj/project.pbxproj</code></div>
+    <div class="row"><span>Evidence</span><p>com.acme.widget must start with com.acme.receiptpal.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Rename to com.acme.receiptpal.&lt;extension&gt;.</p></div>
+    <div class="rule">build-config/ext-bundle-id</div>
+  </div>
+</details>
+<details class="finding blocker" data-sev="BLOCKER" data-search="receiptpal: cfbundleshortversionstring &#x27;1.0 beta&#x27; is invalid must be up to three period-separated integers (e.g. 1.2.0). no &#x27;beta&#x27; or suffixes. use a numeric version; put pre-release info in the build number or testflight notes. build-config/bad-version itms-90060 receiptpal/info.plist receiptpal" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">B6</span>
+    <span class="ftitle">ReceiptPal: CFBundleShortVersionString &#x27;1.0 beta&#x27; is invalid</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">ITMS-90060</span><span class="chip conf conf-validator-blocking" title="Upload validation would block this; evidence is from source, so verify with a build.">Upload-blocking</span><span class="chip tgt">target · ReceiptPal</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Info.plist</code></div>
+    <div class="row"><span>Evidence</span><p>Must be up to three period-separated integers (e.g. 1.2.0). No &#x27;beta&#x27; or suffixes.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Use a numeric version; put pre-release info in the build number or TestFlight notes.</p></div>
+    <div class="rule">build-config/bad-version</div>
+  </div>
+</details>
+<details class="finding blocker" data-sev="BLOCKER" data-search="uiwebview is rejected at upload `let web = uiwebview()`. uiwebview is rejected at upload. replace with wkwebview. code/uiwebview itms-90809 receiptpal/cameraview.swift:12 none" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">B7</span>
+    <span class="ftitle">UIWebView is rejected at upload</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">ITMS-90809</span><span class="chip conf conf-validator-blocking" title="Upload validation would block this; evidence is from source, so verify with a build.">Upload-blocking</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/CameraView.swift:12</code></div>
+    <div class="row"><span>Evidence</span><p><code>let web = UIWebView()</code>. UIWebView is rejected at upload.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Replace with WKWebView.</p></div>
+    <div class="rule">code/uiwebview</div>
+  </div>
+</details>
+<details class="finding blocker" data-sev="BLOCKER" data-search="code appears to detect app review `var isreviewmode = false`. changing behaviour for reviewers is bait-and-switch and can terminate the developer account. remove reviewer detection; every feature must be visible to the reviewer. hidden-features/review-detection 2.5.19 / 2.3.1 receiptpal/store.swift:8 none" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">B8</span>
+    <span class="ftitle">Code appears to detect App Review</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">2.5.19 / 2.3.1</span><span class="chip conf conf-judgment-call" title="A reasonable reviewer could go either way.">Judgment call</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Store.swift:8</code></div>
+    <div class="row"><span>Evidence</span><p><code>var isReviewMode = false</code>. Changing behaviour for reviewers is bait-and-switch and can terminate the developer account.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Remove reviewer detection; every feature must be visible to the reviewer.</p></div>
+    <div class="rule">hidden-features/review-detection</div>
+  </div>
+</details>
+<details class="finding blocker" data-sev="BLOCKER" data-search="no restore purchases path iap is implemented (receiptpal/store.swift:6) but no restore mechanism or &#x27;restore&#x27; ui was found. add a visible &#x27;restore purchases&#x27; button (paywall + settings) that calls appstore.sync() / purchases.restorepurchases() / your sdk&#x27;s restore. payments/no-restore 3.1.1  none" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">B9</span>
+    <span class="ftitle">No Restore Purchases path</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">3.1.1</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span></span>
+  </summary>
+  <div class="fbody">
+    
+    <div class="row"><span>Evidence</span><p>IAP is implemented (ReceiptPal/Store.swift:6) but no restore mechanism or &#x27;Restore&#x27; UI was found.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Add a visible &#x27;Restore Purchases&#x27; button (paywall + settings) that calls AppStore.sync() / Purchases.restorePurchases() / your SDK&#x27;s restore.</p></div>
+    <div class="rule">payments/no-restore</div>
+  </div>
+</details>
+<details class="finding blocker" data-sev="BLOCKER" data-search="subscription screen missing terms of use (eula) &amp; privacy policy links auto-renewable subscription code found but no in-app link to terms of use (eula) or privacy policy. on the purchase screen show: title, length, price per period (from storekit), and functional links to terms of use (apple standard eula is fine) and privacy policy. add the same links to the app store description / eula field. payments/sub-disclosure 3.1.2(c)  none" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">B10</span>
+    <span class="ftitle">Subscription screen missing Terms of Use (EULA) &amp; Privacy Policy links</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">3.1.2(c)</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span></span>
+  </summary>
+  <div class="fbody">
+    
+    <div class="row"><span>Evidence</span><p>Auto-renewable subscription code found but no in-app link to Terms of Use (EULA) or Privacy Policy.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>On the purchase screen show: title, length, price per period (from StoreKit), and functional links to Terms of Use (Apple standard EULA is fine) and Privacy Policy. Add the same links to the App Store description / EULA field.</p></div>
+    <div class="rule">payments/sub-disclosure</div>
+  </div>
+</details>
+<details class="finding blocker" data-sev="BLOCKER" data-search="receiptwidget: no privacyinfo.xcprivacy target receiptwidget (extension) uses required-reason apis: userdefaults (receiptwidget/widget.swift:3). each extension needs its own manifest; the app&#x27;s does not cover it. add privacyinfo.xcprivacy to target receiptwidget (file &gt; new &gt; app privacy) and declare each nsprivacyaccessedapitype with an approved reason code. privacy-manifest/missing itms-91053 / 5.1.1 receiptwidget/info.plist receiptwidget" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">B11</span>
+    <span class="ftitle">ReceiptWidget: no PrivacyInfo.xcprivacy</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">ITMS-91053 / 5.1.1</span><span class="chip conf conf-validator-blocking" title="Upload validation would block this; evidence is from source, so verify with a build.">Upload-blocking</span><span class="chip tgt">target · ReceiptWidget</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptWidget/Info.plist</code></div>
+    <div class="row"><span>Evidence</span><p>Target ReceiptWidget (extension) uses required-reason APIs: UserDefaults (ReceiptWidget/Widget.swift:3). Each extension needs its OWN manifest; the app&#x27;s does not cover it.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Add PrivacyInfo.xcprivacy to target ReceiptWidget (File &gt; New &gt; App Privacy) and declare each NSPrivacyAccessedAPIType with an approved reason code.</p></div>
+    <div class="rule">privacy-manifest/missing</div>
+  </div>
+</details>
+<details class="finding blocker" data-sev="BLOCKER" data-search="missing nscamerausagedescription (camera capture) code uses camera capture (`let session = avcapturesession()`) but target receiptpal info.plist has no nscamerausagedescription. add nscamerausagedescription to receiptpal/info.plist with a specific, user-facing purpose, e.g. &quot;used to scan receipts so you can log expenses.&quot; privacy-strings/missing-key 5.1.1(ii) / itms-90683 receiptpal/cameraview.swift:6 receiptpal" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">B12</span>
+    <span class="ftitle">Missing NSCameraUsageDescription (camera capture)</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">5.1.1(ii) / ITMS-90683</span><span class="chip conf conf-validator-blocking" title="Upload validation would block this; evidence is from source, so verify with a build.">Upload-blocking</span><span class="chip tgt">target · ReceiptPal</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/CameraView.swift:6</code></div>
+    <div class="row"><span>Evidence</span><p>Code uses camera capture (<code>let session = AVCaptureSession()</code>) but target ReceiptPal Info.plist has no NSCameraUsageDescription.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Add NSCameraUsageDescription to ReceiptPal/Info.plist with a specific, user-facing purpose, e.g. &quot;Used to scan receipts so you can log expenses.&quot;</p></div>
+    <div class="rule">privacy-strings/missing-key</div>
+  </div>
+</details>
+<details class="finding blocker" data-sev="BLOCKER" data-search="login wall with no demo account in review notes every screen after onboarding requires sign-in; app review information has no demo credentials. add a demo account (no 2fa) with sample receipts to app store connect → app review information. semantic/2.1-demo-account 2.1  " open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">B13</span>
+    <span class="ftitle">Login wall with no demo account in review notes</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">2.1</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span><span class="chip rev">reviewer judgment</span></span>
+  </summary>
+  <div class="fbody">
+    
+    <div class="row"><span>Evidence</span><p>Every screen after onboarding requires sign-in; App Review Information has no demo credentials.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Add a demo account (no 2FA) with sample receipts to App Store Connect → App Review Information.</p></div>
+    <div class="rule">semantic/2.1-demo-account</div>
+  </div>
+</details></section><section class="group" data-group="WARNING"><h3 class="gh warning">Warnings <span>16</span></h3>
+<details class="finding warning" data-sev="WARNING" data-search="personal data may be sent to a third-party ai without explicit consent ai provider usage: endpoint `let url = url(string: &quot;https://api.openai.com/v1/chat/completions&quot;)!` (receiptpal/ai.swift:4). no consent gate was found. before the first ai request, show a screen that names the provider (e.g. openai) and what is sent (prompts, photos, voice), with an affirmative allow action. store the choice, allow withdrawal, and name the provider in the privacy policy. backend proxies don&#x27;t exempt you. also if the ai generates content, add 1.2 safeguards (report/filter). ai-consent/missing 5.1.2(i) receiptpal/ai.swift:4 none" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">W1</span>
+    <span class="ftitle">Personal data may be sent to a third-party AI without explicit consent</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">5.1.2(i)</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/AI.swift:4</code></div>
+    <div class="row"><span>Evidence</span><p>AI provider usage: endpoint <code>let url = URL(string: &quot;https://api.openai.com/v1/chat/completions&quot;)!</code> (ReceiptPal/AI.swift:4). No consent gate was found.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Before the first AI request, show a screen that names the provider (e.g. OpenAI) and what is sent (prompts, photos, voice), with an affirmative Allow action. Store the choice, allow withdrawal, and name the provider in the privacy policy. Backend proxies don&#x27;t exempt you. Also if the AI generates content, add 1.2 safeguards (report/filter).</p></div>
+    <div class="rule">ai-consent/missing</div>
+  </div>
+</details>
+<details class="finding warning" data-sev="WARNING" data-search="app name &#x27;iphone receipt scanner&#x27; uses an apple trademark names like &#x27;iphone receipt scanner&#x27; or &#x27;siri tools&#x27; are rejected; apple marks may only be used descriptively (&#x27;for iphone&#x27;) in the description, not in the name. rename the app. build-config/trademark-name 5.2.5 receiptpal/info.plist receiptpal" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">W2</span>
+    <span class="ftitle">App name &#x27;iPhone Receipt Scanner&#x27; uses an Apple trademark</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">5.2.5</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span><span class="chip tgt">target · ReceiptPal</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Info.plist</code></div>
+    <div class="row"><span>Evidence</span><p>Names like &#x27;iPhone Receipt Scanner&#x27; or &#x27;Siri Tools&#x27; are rejected; Apple marks may only be used descriptively (&#x27;for iPhone&#x27;) in the description, not in the name.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Rename the app.</p></div>
+    <div class="rule">build-config/trademark-name</div>
+  </div>
+</details>
+<details class="finding warning" data-sev="WARNING" data-search="receiptwidget: version 1.1 ≠ app 1.0 beta extension cfbundleshortversionstring must match the containing app. set marketing_version identically for all targets. build-config/ext-version-mismatch itms-90473 receiptwidget/info.plist receiptwidget" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">W3</span>
+    <span class="ftitle">ReceiptWidget: version 1.1 ≠ app 1.0 beta</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">ITMS-90473</span><span class="chip conf conf-validator-blocking" title="Upload validation would block this; evidence is from source, so verify with a build.">Upload-blocking</span><span class="chip tgt">target · ReceiptWidget</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptWidget/Info.plist</code></div>
+    <div class="row"><span>Evidence</span><p>Extension CFBundleShortVersionString must match the containing app.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Set MARKETING_VERSION identically for all targets.</p></div>
+    <div class="rule">build-config/ext-version-mismatch</div>
+  </div>
+</details>
+<details class="finding warning" data-sev="WARNING" data-search="custom rating prompt `button(&quot;rate us 5 stars!&quot;) {}`. custom review prompts are not allowed. use skstorereviewcontroller / requestreview (expo-store-review, in_app_review). linking to the app store write-review page from a user-initiated button is fine. code/custom-review-prompt 5.6.1 receiptpal/content.swift:8 none" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">W4</span>
+    <span class="ftitle">Custom rating prompt</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">5.6.1</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Content.swift:8</code></div>
+    <div class="row"><span>Evidence</span><p><code>Button(&quot;Rate us 5 stars!&quot;) {}</code>. Custom review prompts are not allowed.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Use SKStoreReviewController / requestReview (expo-store-review, in_app_review). Linking to the App Store write-review page from a user-initiated button is fine.</p></div>
+    <div class="rule">code/custom-review-prompt</div>
+  </div>
+</details>
+<details class="finding warning" data-sev="WARNING" data-search="placeholder or unfinished content in user-facing strings `text(&quot;coming soon&quot;)`. placeholder or unfinished content in user-facing strings. ship complete content; hide unfinished features entirely. content/placeholder 2.1 / 2.3.3 receiptpal/content.swift:6 none" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">W5</span>
+    <span class="ftitle">Placeholder or unfinished content in user-facing strings</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">2.1 / 2.3.3</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Content.swift:6</code></div>
+    <div class="row"><span>Evidence</span><p><code>Text(&quot;Coming soon&quot;)</code>. Placeholder or unfinished content in user-facing strings.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Ship complete content; hide unfinished features entirely.</p></div>
+    <div class="rule">content/placeholder</div>
+  </div>
+</details>
+<details class="finding warning" data-sev="WARNING" data-search="references to other mobile platforms in the ios app `text(&quot;also available on android and google play&quot;)`. references to other mobile platforms in the ios app. remove mentions of android/google play from ios ui copy. content/other-platform 2.3.10 receiptpal/content.swift:7 none" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">W6</span>
+    <span class="ftitle">References to other mobile platforms in the iOS app</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">2.3.10</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Content.swift:7</code></div>
+    <div class="row"><span>Evidence</span><p><code>Text(&quot;Also available on Android and Google Play&quot;)</code>. References to other mobile platforms in the iOS app.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Remove mentions of Android/Google Play from iOS UI copy.</p></div>
+    <div class="rule">content/other-platform</div>
+  </div>
+</details>
+<details class="finding warning" data-sev="WARNING" data-search="receiptpal: uibackgroundmodes &#x27;audio&#x27; without matching code info.plist declares background mode &#x27;audio&#x27; but no code using it was found. remove &#x27;audio&#x27; unless the app does audible background audio (music, podcasts, navigation prompts); reviewers reject unjustified modes. entitlements/bg-mode-unused 2.5.4 receiptpal/info.plist receiptpal" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">W7</span>
+    <span class="ftitle">ReceiptPal: UIBackgroundModes &#x27;audio&#x27; without matching code</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">2.5.4</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span><span class="chip tgt">target · ReceiptPal</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Info.plist</code></div>
+    <div class="row"><span>Evidence</span><p>Info.plist declares background mode &#x27;audio&#x27; but no code using it was found.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Remove &#x27;audio&#x27; unless the app does audible background audio (music, podcasts, navigation prompts); reviewers reject unjustified modes.</p></div>
+    <div class="rule">entitlements/bg-mode-unused</div>
+  </div>
+</details>
+<details class="finding warning" data-sev="WARNING" data-search="receiptpal: uibackgroundmodes &#x27;location&#x27; without matching code info.plist declares background mode &#x27;location&#x27; but no code using it was found. remove &#x27;location&#x27; unless the app does continuous background location the user directly benefits from; reviewers reject unjustified modes. entitlements/bg-mode-unused 2.5.4 receiptpal/info.plist receiptpal" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">W8</span>
+    <span class="ftitle">ReceiptPal: UIBackgroundModes &#x27;location&#x27; without matching code</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">2.5.4</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span><span class="chip tgt">target · ReceiptPal</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Info.plist</code></div>
+    <div class="row"><span>Evidence</span><p>Info.plist declares background mode &#x27;location&#x27; but no code using it was found.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Remove &#x27;location&#x27; unless the app does continuous background location the user directly benefits from; reviewers reject unjustified modes.</p></div>
+    <div class="rule">entitlements/bg-mode-unused</div>
+  </div>
+</details>
+<details class="finding warning" data-sev="WARNING" data-search="third-party login (google) without sign in with apple or equivalent found google login (`import googlesignin`) and no sign in with apple implementation. offer an equivalent login that limits data to name + email, lets users hide their email, and does no ad tracking without consent. sign in with apple is the simplest way to meet 4.8. exempt if the app only uses your own accounts, is an enterprise/education app, or a client for a specific third-party service. login-services/no-equivalent 4.8 receiptpal/auth.swift:1 none" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">W9</span>
+    <span class="ftitle">Third-party login (Google) without Sign in with Apple or equivalent</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">4.8</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Auth.swift:1</code></div>
+    <div class="row"><span>Evidence</span><p>Found Google login (<code>import GoogleSignIn</code>) and no Sign in with Apple implementation.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Offer an equivalent login that limits data to name + email, lets users hide their email, and does no ad tracking without consent. Sign in with Apple is the simplest way to meet 4.8. Exempt if the app only uses your own accounts, is an enterprise/education app, or a client for a specific third-party service.</p></div>
+    <div class="rule">login-services/no-equivalent</div>
+  </div>
+</details>
+<details class="finding warning" data-sev="WARNING" data-search="receiptpal: nsallowsarbitraryloads = true app transport security is disabled globally; app review asks for justification. remove it and add narrow nsexceptiondomains only for hosts you don&#x27;t control that lack tls. use nsallowsarbitraryloadsinwebcontent for in-app browsers. networking/ats-disabled 2.5 / ats receiptpal/info.plist receiptpal" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">W10</span>
+    <span class="ftitle">ReceiptPal: NSAllowsArbitraryLoads = true</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">2.5 / ATS</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span><span class="chip tgt">target · ReceiptPal</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Info.plist</code></div>
+    <div class="row"><span>Evidence</span><p>App Transport Security is disabled globally; App Review asks for justification.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Remove it and add narrow NSExceptionDomains only for hosts you don&#x27;t control that lack TLS. Use NSAllowsArbitraryLoadsInWebContent for in-app browsers.</p></div>
+    <div class="rule">networking/ats-disabled</div>
+  </div>
+</details>
+<details class="finding warning" data-sev="WARNING" data-search="hardcoded ipv4 address `let api = &quot;http://192.168.1.10:8080/api&quot;`. app review runs on an ipv6-only (nat64) network, where ipv4 literals fail. use a hostname (dns gives nat64 a chance to synthesize an address) and urlsession/network.framework. networking/ipv4-literal 2.5.5 receiptpal/store.swift:5 none" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">W11</span>
+    <span class="ftitle">Hardcoded IPv4 address</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">2.5.5</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Store.swift:5</code></div>
+    <div class="row"><span>Evidence</span><p><code>let api = &quot;http://192.168.1.10:8080/api&quot;</code>. App Review runs on an IPv6-only (NAT64) network, where IPv4 literals fail.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Use a hostname (DNS gives NAT64 a chance to synthesize an address) and URLSession/Network.framework.</p></div>
+    <div class="rule">networking/ipv4-literal</div>
+  </div>
+</details>
+<details class="finding warning" data-sev="WARNING" data-search="hardcoded price strings in ui 1 string(s) look like prices, e.g. `var label: string { &quot;pro subscription monthly: $9.99 / month&quot; }`. display product.displayprice / sdk localized price. hardcoded prices go wrong in other storefronts and after price changes, and reviewers flag mismatches with the actual charge. payments/hardcoded-price 3.1.2(c) / 2.3.1 receiptpal/store.swift:7 none" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">W12</span>
+    <span class="ftitle">Hardcoded price strings in UI</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">3.1.2(c) / 2.3.1</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Store.swift:7</code></div>
+    <div class="row"><span>Evidence</span><p>1 string(s) look like prices, e.g. <code>var label: String { &quot;Pro subscription monthly: $9.99 / month&quot; }</code>.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Display Product.displayPrice / SDK localized price. Hardcoded prices go wrong in other storefronts and after price changes, and reviewers flag mismatches with the actual charge.</p></div>
+    <div class="rule">payments/hardcoded-price</div>
+  </div>
+</details>
+<details class="finding warning" data-sev="WARNING" data-search="receiptpal: no privacyinfo.xcprivacy app target receiptpal has no privacy manifest. add privacyinfo.xcprivacy to target receiptpal (file &gt; new &gt; app privacy) and declare each nsprivacyaccessedapitype with an approved reason code. privacy-manifest/missing itms-91053 / 5.1.1 receiptpal/info.plist receiptpal" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">W13</span>
+    <span class="ftitle">ReceiptPal: no PrivacyInfo.xcprivacy</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">ITMS-91053 / 5.1.1</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span><span class="chip tgt">target · ReceiptPal</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Info.plist</code></div>
+    <div class="row"><span>Evidence</span><p>App target ReceiptPal has no privacy manifest.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Add PrivacyInfo.xcprivacy to target ReceiptPal (File &gt; New &gt; App Privacy) and declare each NSPrivacyAccessedAPIType with an approved reason code.</p></div>
+    <div class="rule">privacy-manifest/missing</div>
+  </div>
+</details>
+<details class="finding warning" data-sev="WARNING" data-search="nslocationwheninuseusagedescription states a need for access but not what the app does with it receiptpal: nslocationwheninuseusagedescription = &quot;this app needs your location.&quot; rewrite as a specific purpose tied to a feature, e.g. &quot;your location is used to show nearby gyms on the map.&quot; apple rejects strings like &quot;this app needs access to your camera.&quot; privacy-strings/vague 5.1.1(ii) receiptpal/info.plist receiptpal" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">W14</span>
+    <span class="ftitle">NSLocationWhenInUseUsageDescription states a need for access but not what the app does with it</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">5.1.1(ii)</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span><span class="chip tgt">target · ReceiptPal</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Info.plist</code></div>
+    <div class="row"><span>Evidence</span><p>ReceiptPal: NSLocationWhenInUseUsageDescription = &quot;This app needs your location.&quot;</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Rewrite as a specific purpose tied to a feature, e.g. &quot;Your location is used to show nearby gyms on the map.&quot; Apple rejects strings like &quot;This app needs access to your camera.&quot;</p></div>
+    <div class="rule">privacy-strings/vague</div>
+  </div>
+</details>
+<details class="finding warning" data-sev="WARNING" data-search="possible secret: stripe-secret `let stripekey = &quot;sk_liv…&quot;`. anything in the bundle can be extracted from the ipa. move the secret server-side and rotate it now. (client keys designed to ship, such as firebase/google maps &#x27;aiza…&#x27;, revenuecat public, stripe pk_, and supabase anon keys, are fine.) secrets/stripe-secret 1.6 / 2.5 receiptpal/store.swift:4 none" open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">W15</span>
+    <span class="ftitle">Possible secret: stripe-secret</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">1.6 / 2.5</span><span class="chip conf conf-review-risk" title="A pattern App Review rejects often.">Review risk</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Store.swift:4</code></div>
+    <div class="row"><span>Evidence</span><p><code>let stripeKey = &quot;sk_liv…&quot;</code>. Anything in the bundle can be extracted from the IPA.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Move the secret server-side and rotate it now. (Client keys designed to ship, such as Firebase/Google Maps &#x27;AIza…&#x27;, RevenueCat public, Stripe pk_, and Supabase anon keys, are fine.)</p></div>
+    <div class="rule">secrets/stripe-secret</div>
+  </div>
+</details>
+<details class="finding warning" data-sev="WARNING" data-search="description promises bank sync that this build doesn&#x27;t have app store description: &quot;sync receipts with your bank automatically&quot;. no bank or plaid integration found in code. remove the claim from the description, or ship the feature in this build and describe it in the review notes. semantic/2.3.1-accuracy 2.3.1 fastlane/metadata/en-us/description.txt:3 " open>
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">W16</span>
+    <span class="ftitle">Description promises bank sync that this build doesn&#x27;t have</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">2.3.1</span><span class="chip conf conf-judgment-call" title="A reasonable reviewer could go either way.">Judgment call</span><span class="chip rev">reviewer judgment</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>fastlane/metadata/en-US/description.txt:3</code></div>
+    <div class="row"><span>Evidence</span><p>App Store description: &quot;Sync receipts with your bank automatically&quot;. No bank or Plaid integration found in code.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Remove the claim from the description, or ship the feature in this build and describe it in the review notes.</p></div>
+    <div class="rule">semantic/2.3.1-accuracy</div>
+  </div>
+</details></section><section class="group" data-group="INFO"><h3 class="gh info">Info <span>2</span></h3>
+<details class="finding info" data-sev="INFO" data-search="receiptpal: universal app, so app review tests it on ipad reviewers commonly test on a current ipad; layout bugs there are rejected under 2.1/4.0. run the full flow on an ipad simulator, including split view. assets/ipad-review 2.4.1  receiptpal" >
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">I1</span>
+    <span class="ftitle">ReceiptPal: universal app, so App Review tests it on iPad</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">2.4.1</span><span class="chip conf conf-judgment-call" title="A reasonable reviewer could go either way.">Judgment call</span><span class="chip tgt">target · ReceiptPal</span></span>
+  </summary>
+  <div class="fbody">
+    
+    <div class="row"><span>Evidence</span><p>Reviewers commonly test on a current iPad; layout bugs there are rejected under 2.1/4.0.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>Run the full flow on an iPad simulator, including split view.</p></div>
+    <div class="rule">assets/ipad-review</div>
+  </div>
+</details>
+<details class="finding info" data-sev="INFO" data-search="itsappusesnonexemptencryption not set without it, app store connect blocks each build in &#x27;missing compliance&#x27; until you answer manually. if you only use https/apple crypto, set itsappusesnonexemptencryption = no. export-compliance/missing export compliance receiptpal/info.plist receiptpal" >
+  <summary>
+    <span class="sev-dot" aria-hidden="true"></span>
+    <span class="fid">I2</span>
+    <span class="ftitle">ITSAppUsesNonExemptEncryption not set</span>
+    <span class="fmeta"><span class="chip gl" title="App Review Guideline / upload error">Export compliance</span><span class="chip conf conf-judgment-call" title="A reasonable reviewer could go either way.">Judgment call</span><span class="chip tgt">target · ReceiptPal</span></span>
+  </summary>
+  <div class="fbody">
+    <div class="loc"><span>Where</span><code>ReceiptPal/Info.plist</code></div>
+    <div class="row"><span>Evidence</span><p>Without it, App Store Connect blocks each build in &#x27;Missing Compliance&#x27; until you answer manually.</p></div>
+    
+    <div class="row fix"><span>Fix</span><p>If you only use HTTPS/Apple crypto, set ITSAppUsesNonExemptEncryption = NO.</p></div>
+    <div class="rule">export-compliance/missing</div>
+  </div>
+</details></section>
+</section>
+
+<section class="card"><h2>Draft App Review notes</h2><pre class="notes">WHAT THE APP DOES
+Scan paper receipts and track expenses.
+
+HOW TO TEST
+Demo account: review@receiptpal.app / ••••••••  (no 2FA, 20 sample receipts)
+1. Tap + → Scan to capture a receipt (camera).
+2. Settings → ReceiptPal Pro shows the subscription; Restore Purchases is below it.
+3. Settings → Account → Delete Account.
+
+AI
+Receipt text is sent to OpenAI after the consent screen shown on first scan.</pre><button class="copy" data-copy=".notes">Copy</button></section><section class="card"><h2>Before you press Submit</h2><ul class="todo"><li><label><input type="checkbox"> Archive with the Release configuration on the current SDK</label></li><li><label><input type="checkbox"> Test the full flow on an iPad and on an IPv6-only (NAT64) network</label></li><li><label><input type="checkbox"> Attach the Pro subscription to this version in App Store Connect</label></li><li><label><input type="checkbox"> Answer the new age-rating questions (Shared Location, social media)</label></li></ul></section>
+
+<div class="grid">
+  <section class="card"><h2>Not checked by this report</h2><ul class="plain"><li>Runtime crashes and broken flows on a real device</li><li>Live server content, feature flags and backend availability</li><li>In-app purchase sandbox behaviour and restore</li><li>Push delivery, OAuth and deep links</li><li>Screenshots, creative assets and App Store Connect answers (unless provided)</li></ul></section>
+  <section class="card"><h2>How to read confidence</h2><dl class="conf-legend">
+    <dt><span class="chip conf conf-validator-certain">Validator-certain</span></dt><dd>Apple's upload validation blocks this; seen in the built product.</dd><dt><span class="chip conf conf-validator-blocking">Upload-blocking</span></dt><dd>Upload validation would block this; evidence is from source, so verify with a build.</dd><dt><span class="chip conf conf-review-risk">Review risk</span></dt><dd>A pattern App Review rejects often.</dd><dt><span class="chip conf conf-judgment-call">Judgment call</span></dt><dd>A reasonable reviewer could go either way.</dd>
+  </dl></section>
+</div>
+
+<section class="card"><h2>Notes</h2><ul class="plain"><li>Guidelines checked against developer.apple.com on 2026-11-18; Apple news scanned through 2026-11-17. Scanner: 30 leads, 1 dropped after reading code.</li></ul></section>
+
+<footer>Generated by cleared-for-takeoff. Automated and reviewer checks reduce known risks; they never guarantee approval.</footer>
+</main>
+<script>
+(()=>{const r=document.documentElement,u=new URLSearchParams(location.search).get('theme');
+let saved=null;try{saved=localStorage.getItem('asp-theme')}catch(e){}
+if(u||saved)r.dataset.theme=u||saved;
+const tb=document.querySelector('.theme');tb&&tb.addEventListener('click',()=>{const dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('asp-theme',r.dataset.theme)}catch(e){}});
+let sev='ALL',q='';const cards=[...document.querySelectorAll('.finding')];
+function apply(){cards.forEach(c=>{const show=(sev==='ALL'||c.dataset.sev===sev)&&(!q||c.dataset.search.includes(q));c.classList.toggle('hidden',!show)});
+document.querySelectorAll('.group').forEach(g=>g.classList.toggle('hidden',!g.querySelector('.finding:not(.hidden)')))}
+document.querySelectorAll('.f').forEach(b=>b.addEventListener('click',()=>{sev=b.dataset.f;document.querySelectorAll('.f').forEach(x=>x.classList.toggle('on',x===b));apply()}));
+const s=document.querySelector('.search');s&&s.addEventListener('input',()=>{q=s.value.trim().toLowerCase();apply()});
+document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',()=>{const t=document.querySelector(b.dataset.copy);
+try{navigator.clipboard.writeText(t.textContent);b.textContent='Copied'}catch(e){}}));})();
+</script>
+</body></html>

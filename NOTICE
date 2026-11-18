@@ -1,0 +1,15 @@
+cleared-for-takeoff is original work, informed by the design of these MIT-licensed projects:
+
+- safaiyeh/app-store-review-skill: guideline-section coverage, Swift + RN/Expo patterns,
+  plugin packaging, consent-gated feedback flow. https://github.com/safaiyeh/app-store-review-skill
+- dabodamjan/app-store-rejection-checker: live-guidelines verification, three-level confidence
+  model, "Not checked" and verification-note sections, semantic review step.
+  https://github.com/dabodamjan/app-store-rejection-checker
+- truongduy2611/cleared-for-takeoff-skills: app-type checklists, one-rule-per-file format,
+  asc CLI metadata integration, autofix + re-scan loop. https://github.com/truongduy2611/cleared-for-takeoff-skills
+- JustinPerea/app-store-review-skill: concrete per-target checks with file:line evidence,
+  readiness verdict, false-positive guardrails, external verification checklist, evals.
+  https://github.com/JustinPerea/app-store-review-skill
+
+Not affiliated with or endorsed by Apple Inc. "App Store", "iPhone", "iPad" and "Sign in with
+Apple" are trademarks of Apple Inc. Guideline quotes are from developer.apple.com.

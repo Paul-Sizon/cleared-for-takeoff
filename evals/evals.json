@@ -1,0 +1,75 @@
+{
+  "skill_name": "cleared-for-takeoff",
+  "setup": "python3 evals/fixtures/build_fixtures.py /tmp/preflight-fixtures",
+  "evals": [
+    {
+      "id": "swift-broken-full",
+      "prompt": "I'm about to submit /tmp/preflight-fixtures/swift-broken to the App Store. Will it get rejected? Offline is fine.",
+      "assertions": [
+        {"id": "verdict", "description": "Starts with 'Readiness: NOT READY'", "type": "contains"},
+        {"id": "widget-manifest", "description": "Flags BrokenWidget missing PrivacyInfo.xcprivacy as a BLOCKER citing ITMS-91053", "type": "contains"},
+        {"id": "camera-key", "description": "Flags missing NSCameraUsageDescription with Broken/CameraView.swift:6", "type": "contains"},
+        {"id": "confidence", "description": "Every finding has a Confidence line using only validator-certain / review-risk / judgment-call", "type": "format"},
+        {"id": "no-debug-fp", "description": "Does not report UIWebView in Debug.swift (inside #if DEBUG)", "type": "absence"},
+        {"id": "aps-dev-not-blocker", "description": "Does not treat aps-environment=development in source as a blocker", "type": "absence"},
+        {"id": "not-checked", "description": "Has a 'Not checked' section", "type": "contains"},
+        {"id": "review-notes", "description": "Includes a draft App Review notes block", "type": "contains"},
+        {"id": "no-odds", "description": "Never states an approval probability or percentage", "type": "absence"},
+        {"id": "review-detection", "description": "Raises isReviewMode as a 2.5.19 concern after reading the code", "type": "contains"}
+      ]
+    },
+    {
+      "id": "swift-clean",
+      "prompt": "Preflight check /tmp/preflight-fixtures/swift-clean before App Store submission (offline).",
+      "assertions": [
+        {"id": "no-blockers", "description": "Reports zero blockers", "type": "contains"},
+        {"id": "still-hedged", "description": "States that passing is not a guarantee and lists Not checked items", "type": "contains"},
+        {"id": "metadata-not-audited", "description": "Asks for metadata or marks metadata 'not audited' instead of inventing it", "type": "contains"}
+      ]
+    },
+    {
+      "id": "expo-broken",
+      "prompt": "Check my Expo app at /tmp/preflight-fixtures/expo-broken for App Store rejection risks.",
+      "assertions": [
+        {"id": "expo-plugin-strings", "description": "Recommends setting expo-camera/expo-location plugin permission text in app.json", "type": "contains"},
+        {"id": "expo-manifest", "description": "Recommends expo.ios.privacyManifests", "type": "contains"},
+        {"id": "restore", "description": "Flags missing restore purchases for react-native-purchases", "type": "contains"},
+        {"id": "att", "description": "Flags google-mobile-ads without ATT", "type": "contains"},
+        {"id": "no-platform-fp", "description": "Does not flag Platform.OS === 'android' as other-platform copy", "type": "absence"},
+        {"id": "ota-note", "description": "Mentions expo-updates OTA limits (no new features)", "type": "contains"}
+      ]
+    },
+    {
+      "id": "flutter-broken",
+      "prompt": "Will Apple reject /tmp/preflight-fixtures/flutter-broken? It's a Flutter app.",
+      "assertions": [
+        {"id": "image-picker-keys", "description": "Flags NSCameraUsageDescription and NSMicrophoneUsageDescription required by image_picker", "type": "contains"},
+        {"id": "vague-default", "description": "Flags 'Allow Runner to access your photos' style string as vague (5.1.1(ii))", "type": "contains"},
+        {"id": "ai-consent", "description": "Flags Gemini usage without 5.1.2(i) consent", "type": "contains"},
+        {"id": "ipv6", "description": "Flags the http://10.1.2.3 IPv4 literal for IPv6 review network", "type": "contains"}
+      ]
+    },
+    {
+      "id": "rejection-followup",
+      "prompt": "Apple rejected my app (/tmp/preflight-fixtures/swift-broken) under 5.1.1(v). What do I do?",
+      "assertions": [
+        {"id": "deletion-fix", "description": "Explains in-app account deletion requirements and Sign in with Apple token revocation", "type": "contains"},
+        {"id": "resolution-center", "description": "Explains whether a new binary is needed and how to reply in Resolution Center", "type": "contains"}
+      ]
+    }
+  ],
+  "trigger_evals": {
+    "should_trigger": [
+      "check my iOS app before I submit it",
+      "will this get rejected by app review?",
+      "I got ITMS-91053 missing API declaration",
+      "preflight my expo app for the app store",
+      "apple rejected my flutter app for guideline 4.8"
+    ],
+    "should_not_trigger": [
+      "publish my android app to google play",
+      "write a swift extension for String trimming",
+      "optimize my App Store screenshots for conversion (ASO)"
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "cleared-for-takeoff",
+  "owner": { "name": "Paul Sizon" },
+  "metadata": { "description": "App Store pre-submission review skill for Claude Code" },
+  "plugins": [
+    {
+      "name": "cleared-for-takeoff",
+      "source": "./",
+      "description": "Catch App Store rejections before Apple does: scanner + reviewer judgment for Swift, React Native/Expo and Flutter apps.",
+      "version": "0.1.0",
+      "author": { "name": "Paul Sizon" },
+      "category": "development",
+      "tags": ["ios", "app-store", "review", "privacy", "swift", "react-native", "expo", "flutter"]
+    }
+  ]
+}
