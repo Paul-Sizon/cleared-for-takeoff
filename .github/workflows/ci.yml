@@ -8,6 +8,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         python: ["3.10", "3.13"]
+        exclude:
+          - os: macos-latest   # macOS covered by 3.13 + system python (3.9); saves scarce macOS runners
+            python: "3.10"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
